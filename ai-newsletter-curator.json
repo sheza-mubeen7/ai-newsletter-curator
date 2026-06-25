@@ -1,0 +1,153 @@
+{
+  "name": "ai-newsletter-curator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5ee74bba-613f-4fd4-94fe-4f0502209f5a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://rss.app/feeds/fYcknMwEPEPS31Tx.xml"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "463883c9-2b0a-4efe-b9f9-a1c2765395ee",
+      "name": "RSS Feed Trigger",
+      "retryOnFail": false,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Act as a professional Newsletter Curator. \nTask: Summarize the news below. \nRequirements:\n1. Output MUST be in pure HTML format.\n2. Use <h3> for the title, <p> for summary, and <ul><li> for key points.\n3. DO NOT use markdown bold syntax like **. \n4. DO NOT use \\n characters. \n5. Start your response directly with the HTML code.\n\nNews to summarize: {{ $json.contentSnippet }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ca884f43-94df-40de-80d7-6a1469993ed0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        288,
+        208
+      ],
+      "id": "caddb7ad-214b-4bfc-917a-5ec0113d9499",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "bj1Nv63mvkruhGgk",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "shezainsheykh@gmail.com",
+        "subject": "=Daily Tech News - {{ $now.format('DD') }}",
+        "message": "=<html>\n<body>\n{{ $json.output }}\n</body>\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "ec89913c-487e-4597-b902-5dd0f253366e",
+      "name": "Send a message",
+      "webhookId": "2005694e-b2d7-4e60-9f77-875ddd2ded7a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wUQ7bjvswCL2mKTc",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ea46557d-0cf4-41ed-a40c-5740a5f53e4f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "946bd1f11751998f190a83511c24f67d264680770d0d243021d8749484e0c7d7"
+  },
+  "nodeGroups": [],
+  "id": "ymV65FIbo9Q7wOop",
+  "tags": []
+}
